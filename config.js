@@ -21,6 +21,20 @@ const CONFIG = {
   // 当たり判定調整
   collisionPadding: 6,
 
+  // 敵キャラクター
+  enemy: {
+    moveRange: 40, // 基準位置から左右何px動くか
+    speed: 1.5     // パトロール用の速度
+  },
+
+  // コンティニュー機能
+  continue: {
+    enabled: true,            // コンティニュー機能のON/OFF
+    checkpointInterval: 800,  // 何ワールド単位ごとにチェックポイントを打つか
+    preRollDistance: 150,     // コンティニュー時、死亡地点よりどれだけ手前から再開するか
+    maxContinues: Infinity    // テスト時は Infinity、本番用に制限をかけたい場合は数値に変更
+  },
+
   // デバッグ
   debug: {
     showHitbox: false,

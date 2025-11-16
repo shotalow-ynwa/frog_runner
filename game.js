@@ -182,20 +182,36 @@ class Obstacle {
 class Enemy {
   constructor(data, worldX) {
     this.type = data.type;
-    this.worldX = data.x; // ワールド座標（固定）
+    this.worldX = data.x; // ワールド座標（基準位置）
     this.width = data.width;
     this.height = data.height;
     this.scrollOffset = worldX;
+
+    // 左右パトロール用
+    this.offsetX = 0; // 基準位置からの相対移動量
+    this.direction = 1; // 1: 右, -1: 左
   }
 
   update(scrollOffset) {
     this.scrollOffset = scrollOffset;
+
+    // 左右パトロール
+    this.offsetX += CONFIG.enemy.speed * this.direction;
+
+    // 移動範囲に達したら反転
+    if (this.offsetX > CONFIG.enemy.moveRange) {
+      this.offsetX = CONFIG.enemy.moveRange;
+      this.direction = -1;
+    } else if (this.offsetX < -CONFIG.enemy.moveRange) {
+      this.offsetX = -CONFIG.enemy.moveRange;
+      this.direction = 1;
+    }
   }
 
   getScreenX() {
-    // シンプルにワールド座標からスクロール位置を引く
-    // 敵は背景と一緒に左に流れていく
-    return this.worldX - this.scrollOffset;
+    // ワールド座標 + パトロールオフセット - スクロール位置
+    // 「少し左右に揺れながら左方向に流れていく」ように見える
+    return this.worldX + this.offsetX - this.scrollOffset;
   }
 
   draw(ctx) {
@@ -319,10 +335,15 @@ class Game {
     this.canvas.width = CONFIG.canvasWidth;
     this.canvas.height = CONFIG.canvasHeight;
 
-    this.state = 'running'; // 'running', 'gameOver', 'stageClear'
+    this.state = 'running'; // 'running', 'gameOver', 'continueReady', 'stageClear'
     this.worldX = 0;
     this.player = null;
     this.level = null;
+
+    // コンティニュー機能用
+    this.lastCheckpointX = 0; // 直近のチェックポイント worldX
+    this.deathX = 0;          // 死亡時の worldX
+    this.continueCount = 0;   // コンティニュー回数
 
     this.setupInput();
     this.reset();
@@ -339,6 +360,8 @@ class Game {
         e.preventDefault();
         if (this.state === 'gameOver') {
           this.reset();
+        } else if (this.state === 'continueReady') {
+          this.continueFromCheckpoint();
         }
       }
     });
@@ -361,6 +384,16 @@ class Game {
 
     // ワールド（スクロール）の更新
     this.worldX += CONFIG.scrollSpeed;
+
+    // チェックポイント更新（コンティニュー有効時のみ）
+    if (CONFIG.continue.enabled) {
+      const interval = CONFIG.continue.checkpointInterval;
+      const nextCheckpoint = this.lastCheckpointX + interval;
+
+      if (this.worldX >= nextCheckpoint) {
+        this.lastCheckpointX = nextCheckpoint;
+      }
+    }
 
     // レベルの更新
     this.level.update(this.worldX);
@@ -427,13 +460,42 @@ class Game {
   }
 
   gameOver() {
-    this.state = 'gameOver';
-    this.updateMessage('GAME OVER - Press R to Restart', 'game-over');
+    // 死亡地点を記録
+    this.deathX = this.worldX;
+
+    // コンティニュー可能か判定
+    const canContinue =
+      CONFIG.continue.enabled &&
+      this.lastCheckpointX > 0 &&
+      this.continueCount < CONFIG.continue.maxContinues;
+
+    if (canContinue) {
+      this.state = 'continueReady';
+      this.updateMessage('GAME OVER - Press R to Continue', 'game-over');
+    } else {
+      this.state = 'gameOver';
+      this.updateMessage('GAME OVER - Press R to Restart', 'game-over');
+    }
   }
 
   stageClear() {
     this.state = 'stageClear';
     this.updateMessage('STAGE CLEAR!', 'stage-clear');
+  }
+
+  continueFromCheckpoint() {
+    this.continueCount++;
+
+    const preRoll = CONFIG.continue.preRollDistance;
+    const targetWorldX = Math.max(0, this.lastCheckpointX - preRoll);
+
+    this.worldX = targetWorldX;
+
+    this.player = new Player();
+    this.level = new Level(CONFIG.stage1);
+
+    this.updateMessage('');
+    this.state = 'running';
   }
 
   updateMessage(text, className = '') {
