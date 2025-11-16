@@ -115,7 +115,7 @@ const CONFIG = {
     showWorldPos: false,    // ワールド座標とプレイヤーY座標を画面に表示するか
                             // デバッグ時に便利
 
-    enableConfigUI: false   // 設定パネルを表示するか
+    enableConfigUI: true   // 設定パネルを表示するか
                             // true にするとブラウザ上で主要パラメータを変更できる
   },
 
