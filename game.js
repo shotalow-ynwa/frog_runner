@@ -260,6 +260,9 @@ class Level {
     this.enemies = [];
     this.goalX = CONFIG.stageLength;
 
+    // ステージレイアウトの検証
+    Level.validateStageLayout(stageData);
+
     // 障害物の生成
     stageData.obstacles.forEach(data => {
       if (data.type === 'enemy') {
@@ -268,6 +271,76 @@ class Level {
         this.obstacles.push(new Obstacle(data, 0));
       }
     });
+  }
+
+  // ステージレイアウトの検証（静的メソッド）
+  static validateStageLayout(stageData) {
+    // すべての危険オブジェクトを抽出（hole, spike, enemy）
+    const hazards = stageData.obstacles.map(obs => {
+      const width = obs.type === 'hole' ? obs.width : (obs.width || 40);
+      return {
+        type: obs.type,
+        x: obs.x,
+        width: width,
+        endX: obs.x + width
+      };
+    }).sort((a, b) => a.x - b.x);
+
+    // 連続した危険ゾーンを検出
+    const hazardZones = [];
+    let currentZone = null;
+
+    for (let i = 0; i < hazards.length; i++) {
+      const hazard = hazards[i];
+
+      if (!currentZone) {
+        // 新しいゾーンの開始
+        currentZone = {
+          startX: hazard.x,
+          endX: hazard.endX,
+          hazards: [hazard]
+        };
+      } else {
+        // 前の危険オブジェクトとの間隔をチェック
+        const gap = hazard.x - currentZone.endX;
+
+        if (gap < CONFIG.safeZoneWidth) {
+          // 安全地帯が不十分 → 同じゾーンに追加
+          currentZone.endX = hazard.endX;
+          currentZone.hazards.push(hazard);
+        } else {
+          // 十分な安全地帯がある → 現在のゾーンを保存して新しいゾーンを開始
+          hazardZones.push(currentZone);
+          currentZone = {
+            startX: hazard.x,
+            endX: hazard.endX,
+            hazards: [hazard]
+          };
+        }
+      }
+    }
+
+    // 最後のゾーンを追加
+    if (currentZone) {
+      hazardZones.push(currentZone);
+    }
+
+    // 各ゾーンの幅をチェック
+    hazardZones.forEach((zone, index) => {
+      const zoneWidth = zone.endX - zone.startX;
+      if (zoneWidth > CONFIG.maxHazardSpan) {
+        const hazardTypes = zone.hazards.map(h => `${h.type}@${h.x}`).join(', ');
+        console.warn(
+          `⚠️ Impossible hazard zone detected!\n` +
+          `  Zone ${index + 1}: x=${zone.startX} to ${zone.endX} (width: ${zoneWidth}px)\n` +
+          `  Max clearable width: ${CONFIG.maxHazardSpan}px\n` +
+          `  Hazards: ${hazardTypes}\n` +
+          `  → Players cannot jump over this zone!`
+        );
+      }
+    });
+
+    return hazardZones;
   }
 
   update(scrollOffset) {

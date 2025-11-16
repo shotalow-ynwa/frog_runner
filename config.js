@@ -21,6 +21,10 @@ const CONFIG = {
   // 当たり判定調整
   collisionPadding: 6,
 
+  // レベルデザイン制約
+  maxHazardSpan: 110,      // ジャンプで越えられる危険ゾーンの最大幅（px）
+  safeZoneWidth: 60,       // プレイヤーが安全に着地できる最小幅（px）
+
   // 敵キャラクター
   enemy: {
     moveRange: 40, // 基準位置から左右何px動くか
@@ -51,7 +55,7 @@ const CONFIG = {
       { type: 'hole', x: 2800, width: 100 },
       { type: 'enemy', x: 3400, width: 40, height: 40 },
       { type: 'spike', x: 4000, width: 40, height: 40 },
-      { type: 'spike', x: 4100, width: 40, height: 40 },
+      { type: 'spike', x: 4200, width: 40, height: 40 }, // 修正: 4100 → 4200 (安全地帯を確保)
       { type: 'hole', x: 4700, width: 110 },
       { type: 'enemy', x: 5200, width: 40, height: 40 },
     ]
