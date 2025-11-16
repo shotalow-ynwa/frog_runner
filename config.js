@@ -34,11 +34,11 @@ const CONFIG = {
       { type: 'spike', x: 1300, width: 40, height: 40 },
       { type: 'enemy', x: 1800, width: 40, height: 40, speed: 1.5, moveRange: 100 },
       { type: 'spike', x: 2200, width: 40, height: 40 },
-      { type: 'hole', x: 2800, width: 150 },
+      { type: 'hole', x: 2800, width: 100 },
       { type: 'enemy', x: 3400, width: 40, height: 40, speed: 2.0, moveRange: 120 },
       { type: 'spike', x: 4000, width: 40, height: 40 },
       { type: 'spike', x: 4100, width: 40, height: 40 },
-      { type: 'hole', x: 4700, width: 180 },
+      { type: 'hole', x: 4700, width: 110 },
       { type: 'enemy', x: 5200, width: 40, height: 40, speed: 1.8, moveRange: 150 },
     ]
   }
