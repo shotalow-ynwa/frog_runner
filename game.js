@@ -182,20 +182,36 @@ class Obstacle {
 class Enemy {
   constructor(data, worldX) {
     this.type = data.type;
-    this.baseX = data.x; // ワールド座標での基準位置（固定）
-    this.offsetX = 0; // 基準位置からのオフセット
+    this.initialWorldX = data.x; // 初期のワールド座標
     this.width = data.width;
     this.height = data.height;
     this.speed = data.speed;
     this.moveRange = data.moveRange || 100;
     this.direction = 1;
     this.scrollOffset = worldX;
+
+    // 画面座標ベースの管理
+    this.hasAppeared = false;
+    this.screenCenterX = null; // 画面上の中心位置
+    this.offsetX = 0; // 中心位置からのオフセット
   }
 
   update(scrollOffset) {
     this.scrollOffset = scrollOffset;
 
-    // 左右往復移動（オフセットのみ変更）
+    // 初めて画面に現れたときに画面座標を記録
+    if (!this.hasAppeared) {
+      const screenPos = this.initialWorldX - scrollOffset;
+      // 画面内に入ったら有効化
+      if (screenPos < CONFIG.canvasWidth && screenPos > -this.width) {
+        this.hasAppeared = true;
+        this.screenCenterX = screenPos;
+      } else {
+        return; // まだ画面外
+      }
+    }
+
+    // 画面上で左右往復移動
     this.offsetX += this.speed * this.direction;
 
     if (this.offsetX > this.moveRange) {
@@ -208,7 +224,12 @@ class Enemy {
   }
 
   getScreenX() {
-    return (this.baseX + this.offsetX) - this.scrollOffset;
+    if (!this.hasAppeared) {
+      // まだ画面に現れていない場合は通常のワールド座標計算
+      return this.initialWorldX - this.scrollOffset;
+    }
+    // 画面座標ベースで位置を返す（スクロールに影響されない）
+    return this.screenCenterX + this.offsetX;
   }
 
   draw(ctx) {
