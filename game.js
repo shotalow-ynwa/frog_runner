@@ -185,32 +185,17 @@ class Enemy {
     this.worldX = data.x; // ワールド座標（固定）
     this.width = data.width;
     this.height = data.height;
-    this.speed = data.speed;
-    this.moveRange = data.moveRange || 100;
-    this.direction = 1;
     this.scrollOffset = worldX;
-    this.offsetX = 0; // 左右往復移動用のオフセット
   }
 
   update(scrollOffset) {
     this.scrollOffset = scrollOffset;
-
-    // 左右往復移動
-    this.offsetX += this.speed * this.direction;
-
-    if (this.offsetX > this.moveRange) {
-      this.offsetX = this.moveRange;
-      this.direction = -1;
-    } else if (this.offsetX < -this.moveRange) {
-      this.offsetX = -this.moveRange;
-      this.direction = 1;
-    }
   }
 
   getScreenX() {
-    // ワールド座標 + 往復移動オフセット - スクロール位置
-    // これで背景と一緒に流れながら左右に動く
-    return (this.worldX + this.offsetX) - this.scrollOffset;
+    // シンプルにワールド座標からスクロール位置を引く
+    // 敵は背景と一緒に左に流れていく
+    return this.worldX - this.scrollOffset;
   }
 
   draw(ctx) {
@@ -274,12 +259,12 @@ class Level {
     this.enemies.forEach(enemy => enemy.update(scrollOffset));
   }
 
-  draw(ctx) {
+  draw(ctx, scrollOffset) {
     this.obstacles.forEach(obstacle => obstacle.draw(ctx));
     this.enemies.forEach(enemy => enemy.draw(ctx));
 
     // ゴール地点の描画
-    const goalScreenX = this.goalX - game.worldX;
+    const goalScreenX = this.goalX - scrollOffset;
     if (goalScreenX > 0 && goalScreenX < CONFIG.canvasWidth + 100) {
       ctx.fillStyle = '#FFD700';
       ctx.fillRect(goalScreenX, 0, 50, CONFIG.canvasHeight);
@@ -412,8 +397,8 @@ class Game {
     // 地面の描画
     this.drawGround();
 
-    // レベルの描画
-    this.level.draw(this.ctx);
+    // レベルの描画（scrollOffsetを渡す）
+    this.level.draw(this.ctx, this.worldX);
 
     // プレイヤーの描画
     this.player.draw(this.ctx);
