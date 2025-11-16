@@ -56,3 +56,101 @@ canvas {
 .message.stage-clear {
     color: #51cf66;
 }
+
+/* デバッグ用設定パネル */
+.config-panel {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    background: rgba(255, 255, 255, 0.95);
+    color: #333;
+    padding: 20px;
+    border-radius: 12px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+    min-width: 280px;
+    max-width: 320px;
+    display: none; /* デフォルトは非表示 */
+    z-index: 1000;
+}
+
+.config-panel h2 {
+    margin: 0 0 15px 0;
+    font-size: 1.3em;
+    color: #667eea;
+    border-bottom: 2px solid #667eea;
+    padding-bottom: 8px;
+}
+
+.config-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.config-grid label {
+    display: flex;
+    flex-direction: column;
+    font-size: 0.9em;
+    font-weight: bold;
+    color: #555;
+}
+
+.config-grid input {
+    margin-top: 4px;
+    padding: 6px 10px;
+    border: 2px solid #ddd;
+    border-radius: 6px;
+    font-size: 1em;
+    transition: border-color 0.2s;
+}
+
+.config-grid input:focus {
+    outline: none;
+    border-color: #667eea;
+}
+
+.config-actions {
+    display: flex;
+    gap: 8px;
+    margin-top: 15px;
+}
+
+.config-actions button {
+    flex: 1;
+    padding: 10px;
+    border: none;
+    border-radius: 6px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: all 0.2s;
+    font-size: 0.9em;
+}
+
+#cfg-apply {
+    background: #667eea;
+    color: white;
+}
+
+#cfg-apply:hover {
+    background: #5568d3;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+}
+
+#cfg-reset {
+    background: #e0e0e0;
+    color: #333;
+}
+
+#cfg-reset:hover {
+    background: #d0d0d0;
+}
+
+.config-note {
+    margin-top: 12px;
+    font-size: 0.75em;
+    color: #888;
+    line-height: 1.4;
+    border-top: 1px solid #eee;
+    padding-top: 10px;
+}

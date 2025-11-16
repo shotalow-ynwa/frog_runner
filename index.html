@@ -16,6 +16,44 @@
         <div id="message" class="message"></div>
     </div>
 
+    <!-- デバッグ用設定パネル -->
+    <div id="config-panel" class="config-panel">
+        <h2>⚙️ Debug Config</h2>
+        <div class="config-grid">
+            <label>
+                scrollSpeed:
+                <input id="cfg-scrollSpeed" type="number" step="0.5" min="1" max="10">
+            </label>
+            <label>
+                gravity:
+                <input id="cfg-gravity" type="number" step="0.1" min="0.2" max="2">
+            </label>
+            <label>
+                jumpVelocity:
+                <input id="cfg-jumpVelocity" type="number" step="0.5" min="-20" max="-5">
+            </label>
+            <label>
+                maxFallSpeed:
+                <input id="cfg-maxFallSpeed" type="number" step="1" min="5" max="30">
+            </label>
+            <label>
+                enemy.speed:
+                <input id="cfg-enemySpeed" type="number" step="0.1" min="0" max="5">
+            </label>
+            <label>
+                enemy.moveRange:
+                <input id="cfg-enemyMoveRange" type="number" step="5" min="0" max="150">
+            </label>
+        </div>
+        <div class="config-actions">
+            <button id="cfg-apply">適用してリスタート</button>
+            <button id="cfg-reset">デフォルトに戻す</button>
+        </div>
+        <div class="config-note">
+            ※ 値を変更して「適用してリスタート」を押すと即座に反映されます
+        </div>
+    </div>
+
     <script src="config.js"></script>
     <script src="game.js"></script>
 </body>

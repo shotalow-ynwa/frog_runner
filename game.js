@@ -589,4 +589,75 @@ let game;
 window.addEventListener('load', () => {
   game = new Game();
   game.start();
+
+  // デバッグ用設定パネルの初期化
+  initConfigPanel();
 });
+
+// デバッグ用設定パネルの初期化
+function initConfigPanel() {
+  const panel = document.getElementById('config-panel');
+
+  // enableConfigUI が true の場合のみ表示
+  if (CONFIG.debug.enableConfigUI) {
+    panel.style.display = 'block';
+  }
+
+  // デフォルト値を保存（リセット用）
+  const defaults = {
+    scrollSpeed: CONFIG.scrollSpeed,
+    gravity: CONFIG.gravity,
+    jumpVelocity: CONFIG.jumpVelocity,
+    maxFallSpeed: CONFIG.maxFallSpeed,
+    enemySpeed: CONFIG.enemy.speed,
+    enemyMoveRange: CONFIG.enemy.moveRange
+  };
+
+  // 現在の値をinputにセット
+  function loadConfigToUI() {
+    document.getElementById('cfg-scrollSpeed').value = CONFIG.scrollSpeed;
+    document.getElementById('cfg-gravity').value = CONFIG.gravity;
+    document.getElementById('cfg-jumpVelocity').value = CONFIG.jumpVelocity;
+    document.getElementById('cfg-maxFallSpeed').value = CONFIG.maxFallSpeed;
+    document.getElementById('cfg-enemySpeed').value = CONFIG.enemy.speed;
+    document.getElementById('cfg-enemyMoveRange').value = CONFIG.enemy.moveRange;
+  }
+
+  loadConfigToUI();
+
+  // 「適用してリスタート」ボタン
+  document.getElementById('cfg-apply').addEventListener('click', () => {
+    // inputの値をCONFIGに反映
+    CONFIG.scrollSpeed = parseFloat(document.getElementById('cfg-scrollSpeed').value);
+    CONFIG.gravity = parseFloat(document.getElementById('cfg-gravity').value);
+    CONFIG.jumpVelocity = parseFloat(document.getElementById('cfg-jumpVelocity').value);
+    CONFIG.maxFallSpeed = parseFloat(document.getElementById('cfg-maxFallSpeed').value);
+    CONFIG.enemy.speed = parseFloat(document.getElementById('cfg-enemySpeed').value);
+    CONFIG.enemy.moveRange = parseFloat(document.getElementById('cfg-enemyMoveRange').value);
+
+    // ゲームをリスタート
+    game.reset();
+    console.log('✅ Config updated and game restarted:', {
+      scrollSpeed: CONFIG.scrollSpeed,
+      gravity: CONFIG.gravity,
+      jumpVelocity: CONFIG.jumpVelocity,
+      maxFallSpeed: CONFIG.maxFallSpeed,
+      enemySpeed: CONFIG.enemy.speed,
+      enemyMoveRange: CONFIG.enemy.moveRange
+    });
+  });
+
+  // 「デフォルトに戻す」ボタン
+  document.getElementById('cfg-reset').addEventListener('click', () => {
+    CONFIG.scrollSpeed = defaults.scrollSpeed;
+    CONFIG.gravity = defaults.gravity;
+    CONFIG.jumpVelocity = defaults.jumpVelocity;
+    CONFIG.maxFallSpeed = defaults.maxFallSpeed;
+    CONFIG.enemy.speed = defaults.enemySpeed;
+    CONFIG.enemy.moveRange = defaults.enemyMoveRange;
+
+    loadConfigToUI();
+    game.reset();
+    console.log('🔄 Config reset to defaults');
+  });
+}
