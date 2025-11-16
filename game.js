@@ -26,12 +26,12 @@ class Player {
     }
   }
 
-  update() {
+  update(isHoleBelow = false) {
     this.applyGravity();
     this.y += this.velocityY;
 
-    // 地面との衝突判定
-    if (this.y >= CONFIG.groundY - this.height) {
+    // 地面との衝突判定（穴の上にいない場合のみ）
+    if (!isHoleBelow && this.y >= CONFIG.groundY - this.height) {
       this.y = CONFIG.groundY - this.height;
       this.velocityY = 0;
       this.isJumping = false;
@@ -182,12 +182,12 @@ class Obstacle {
 class Enemy {
   constructor(data, worldX) {
     this.type = data.type;
-    this.worldX = data.x;
+    this.baseX = data.x; // ワールド座標での基準位置（固定）
+    this.offsetX = 0; // 基準位置からのオフセット
     this.width = data.width;
     this.height = data.height;
     this.speed = data.speed;
     this.moveRange = data.moveRange || 100;
-    this.startX = data.x;
     this.direction = 1;
     this.scrollOffset = worldX;
   }
@@ -195,20 +195,20 @@ class Enemy {
   update(scrollOffset) {
     this.scrollOffset = scrollOffset;
 
-    // 左右往復移動
-    this.worldX += this.speed * this.direction;
+    // 左右往復移動（オフセットのみ変更）
+    this.offsetX += this.speed * this.direction;
 
-    if (this.worldX > this.startX + this.moveRange) {
-      this.worldX = this.startX + this.moveRange;
+    if (this.offsetX > this.moveRange) {
+      this.offsetX = this.moveRange;
       this.direction = -1;
-    } else if (this.worldX < this.startX - this.moveRange) {
-      this.worldX = this.startX - this.moveRange;
+    } else if (this.offsetX < -this.moveRange) {
+      this.offsetX = -this.moveRange;
       this.direction = 1;
     }
   }
 
   getScreenX() {
-    return this.worldX - this.scrollOffset;
+    return (this.baseX + this.offsetX) - this.scrollOffset;
   }
 
   draw(ctx) {
@@ -287,10 +287,24 @@ class Level {
     }
   }
 
-  checkCollisions(player) {
-    // 障害物との衝突チェック
+  isHoleBelow(player) {
+    // プレイヤーの足元に穴があるかチェック
     for (let obstacle of this.obstacles) {
-      if (player.collidesWith(obstacle)) {
+      if (obstacle.type === 'hole') {
+        const screenX = obstacle.getScreenX();
+        // プレイヤーの足元が穴の範囲内にあるか
+        if (player.x + player.width > screenX && player.x < screenX + obstacle.width) {
+          return true;
+        }
+      }
+    }
+    return false;
+  }
+
+  checkCollisions(player) {
+    // 障害物との衝突チェック（穴以外）
+    for (let obstacle of this.obstacles) {
+      if (obstacle.type !== 'hole' && player.collidesWith(obstacle)) {
         return true;
       }
     }
@@ -300,11 +314,6 @@ class Level {
       if (player.collidesWith(enemy)) {
         return true;
       }
-    }
-
-    // 穴に落下したかチェック
-    if (player.y > CONFIG.canvasHeight) {
-      return true;
     }
 
     return false;
@@ -363,17 +372,26 @@ class Game {
   update() {
     if (this.state !== 'running') return;
 
-    // プレイヤーの更新
-    this.player.update();
-
     // ワールド（スクロール）の更新
     this.worldX += CONFIG.scrollSpeed;
 
     // レベルの更新
     this.level.update(this.worldX);
 
-    // 衝突判定
+    // 穴の判定
+    const isHoleBelow = this.level.isHoleBelow(this.player);
+
+    // プレイヤーの更新
+    this.player.update(isHoleBelow);
+
+    // 衝突判定（スパイク・敵）
     if (this.level.checkCollisions(this.player)) {
+      this.gameOver();
+      return;
+    }
+
+    // 画面外に落下（穴に落ちた）
+    if (this.player.y > CONFIG.canvasHeight) {
       this.gameOver();
       return;
     }
