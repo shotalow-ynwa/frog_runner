@@ -109,10 +109,10 @@ const CONFIG = {
   // デバッグ機能
   // ========================================
   debug: {
-    showHitbox: false,      // 当たり判定の枠を表示するか
+    showHitbox: true,      // 当たり判定の枠を表示するか
                             // true にするとプレイヤー・障害物・敵の当たり判定が色枠で表示される
 
-    showWorldPos: false,    // ワールド座標とプレイヤーY座標を画面に表示するか
+    showWorldPos: true,    // ワールド座標とプレイヤーY座標を画面に表示するか
                             // デバッグ時に便利
 
     enableConfigUI: true   // 設定パネルを表示するか
